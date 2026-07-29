@@ -7,6 +7,6 @@ SRC="/Users/okadaaki/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsid
   cat "$SRC"
   printf '\n</html>\n'
 } > index.html
-git add index.html
-git commit -q -m "店じまい $(date +%F_%H:%M)" || { echo "変更なし"; exit 0; }
+git add -A
+git commit -q -m "店じまい $(date +%F_%H:%M)" || echo "変更なし（前回から同じ内容）"
 git push -q origin main && echo "公開しました"
