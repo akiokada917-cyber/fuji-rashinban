@@ -3,7 +3,7 @@
 cd "$(dirname "$0")"
 SRC="/Users/okadaaki/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Vault/目標管理/羅針盤.html"
 {
-  printf '<!doctype html>\n<html lang="ja">\n<meta charset="utf-8">\n<meta name="robots" content="noindex, nofollow">\n'
+  printf '<!doctype html>\n<html lang="ja">\n<meta charset="utf-8">\n<meta name="robots" content="noindex, nofollow">\n<link rel="apple-touch-icon" href="apple-touch-icon.png">\n<link rel="icon" type="image/png" href="apple-touch-icon.png">\n'
   cat "$SRC"
   printf '\n</html>\n'
 } > index.html
