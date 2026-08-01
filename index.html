@@ -939,7 +939,12 @@
     date: "2026-08-01",
     stampsBase: 23,
     day: {},
-    inbox: [{ id: "b1", text: "タスクの整理（何があったか確認）", status: "inbox" }]
+    inbox: [
+      { id: "b1", text: "タスクの整理（何があったか確認）", status: "inbox" },
+      { id: "k1", text: "LINE登録者1名にプチ鑑定する", status: "done" },
+      { id: "k2", text: "美容院に行く", status: "done" },
+      { id: "k3", text: "手相の講義を収録した", status: "done" }
+    ]
   };
 
   function load(key, fb){
@@ -953,6 +958,17 @@
   var monthState = load(monthStore, {});
   var mood       = load(moodStore, {});
   var inbox      = load(inboxStore, []);
+
+  /* 日付が変わったら、前日までの「済」ふせんを自動で掃除する（2026-08-01追加）。
+     済ぶんは夜の店じまいで通帳(stampsBase)に繰り入れ済みなので、翌朝のポケットは空から始まる。
+     まだ済んでいないふせんは消さずに持ち越す。 */
+  var seenStore = "rashinban-last-open";
+  var lastOpen = load(seenStore, "");
+  if(lastOpen !== DATE_KEY){
+    inbox = inbox.filter(function(x){ return x.status !== "done"; });
+    save(inboxStore, inbox);
+    save(seenStore, DATE_KEY);
+  }
 
   /* 通帳の内容をブラウザ保存とマージ（日付が合う日だけ。通帳の「済」は必ず生きる） */
   if(BAKED.date === DATE_KEY){
