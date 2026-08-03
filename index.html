@@ -577,30 +577,50 @@
     <div class="today-date" id="dateline">2026年7月25日（金）</div>
   </header>
 
-  <!-- 湊の手紙（朝／夜の2通。毎晩の店じまいで両方書き換える。朝4時〜17時台=朝、18時〜深夜3時台=夜） -->
+  <!-- 湊の手紙（3通。毎晩の店じまい／留守番更新で3通とも書き換える。
+       3通すべてに data-for（その手紙を出す日）を持たせ、今日と合わない手紙は表示しない。
+       手帳の1日は朝4時〜翌3時59分。深夜0〜3時台は「まだ前日」として扱う。 -->
   <section class="page w-pink letter">
     <div class="tape"></div>
     <h2><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="6" width="17" height="13" rx="2.5" fill="none" stroke="var(--pink)" stroke-width="1.7"/><path d="M4 8l8 6 8-6" fill="none" stroke="var(--pink)" stroke-width="1.7" stroke-linejoin="round"/></svg>ふじさんへ</h2>
-    <p class="l-body" id="letter-morning" hidden>おはよう。ゆうべの21時半、夜泣きの様子を見にいってそのまま朝まで。あれで「22時までにお布団」のふせんに、初めて花マルがついたんだよ。そして今朝、ちゃんと早起きできてる。早く寝たら早く起きられて朝が使える——ふじさんがずっと欲しかったサイクルが、いま初めて回ってる。今日の入口はLINEの返信から。成果報告と台本は、すき間で一歩ずつでいい。いってらっしゃい。</p>
-    <p class="l-body" id="letter-night" hidden>発表会と法事の一日、やり切ったね。3人の子の晴れ舞台を見て、お父さんに半年ぶんの報告をして、帰ってきてストーリーズまで出して、それでも21時半に眠った。家族の一日を丸ごと抱えた日曜日として、満点どころかお釣りが来るよ。ゆっくりおやすみなさい。</p>
+    <p class="l-body" id="letter-morning" data-for="2026-08-03" hidden>おはよう。ゆうべの21時半、夜泣きの様子を見にいってそのまま朝まで。あれで「22時までにお布団」のふせんに、初めて花マルがついたんだよ。そして今朝、ちゃんと早起きできてる。早く寝たら早く起きられて朝が使える——ふじさんがずっと欲しかったサイクルが、いま初めて回ってる。今日の入口はLINEの返信から。成果報告と台本は、すき間で一歩ずつでいい。いってらっしゃい。</p>
+    <p class="l-body" id="letter-night" data-for="2026-08-02" hidden>発表会と法事の一日、やり切ったね。3人の子の晴れ舞台を見て、お父さんに半年ぶんの報告をして、帰ってきてストーリーズまで出して、それでも21時半に眠った。家族の一日を丸ごと抱えた日曜日として、満点どころかお釣りが来るよ。ゆっくりおやすみなさい。</p>
     <p class="l-body" id="letter-night2" data-for="2026-08-03" hidden>おかえりなさい、月曜のフル勤務おつかれさま。今日はLINEの返信、成果報告、台本と、人に届ける仕事が並ぶ日だったね。どこまで進んだかは、あとで聞かせて。全部でなくても、ひとつ届いていれば今日は動いた日だよ。あしたは台本の納期だから、今夜の店じまいは軽めにして、22時のお布団の2連勝を狙おう。</p>
-    <p class="l-sign">湊（みなと）より — 手紙は朝と夜で変わります。中身は毎晩の店じまいで新しく</p>
+    <p class="l-body" id="letter-none" hidden>ごめん、今日ぶんの手紙がまだ届いてないよ。ゆうべの店じまいが飛んだのかもしれない。チャットで「店じまい」って送ってくれたら、そこから書くね。</p>
+    <p class="l-sign" id="letter-sign">湊（みなと）より — 手紙は朝と夜で変わります。中身は毎晩の店じまいで新しく</p>
   </section>
   <script>
   (function(){
     var now = new Date();
     var h = now.getHours();
     function z(n){ return (n < 10 ? "0" : "") + n; }
-    var today = now.getFullYear() + "-" + z(now.getMonth()+1) + "-" + z(now.getDate());
+    function key(d){ return d.getFullYear() + "-" + z(d.getMonth()+1) + "-" + z(d.getDate()); }
+    /* 手帳の1日は朝4時から翌3時59分まで。深夜0〜3時台は「まだ前日」として数える */
+    var day = key(new Date(now.getTime() - (h < 4 ? 86400000 : 0)));
+
     var m  = document.getElementById("letter-morning");
     var n  = document.getElementById("letter-night");
     var n2 = document.getElementById("letter-night2");
-    /* 朝〜夕方=朝の手紙。18時以降は「その日用の夜の手紙」(data-forが今日なら)、
-       店じまい後や深夜は「今日の振り返り」の手紙。 */
-    var show = (h >= 4 && h < 18) ? m
-             : (h >= 18 && n2.getAttribute("data-for") === today) ? n2
-             : n;
-    [m, n, n2].forEach(function(el){ el.hidden = (el !== show); });
+    var none = document.getElementById("letter-none");
+    var sign = document.getElementById("letter-sign");
+    function fresh(el){ return el.getAttribute("data-for") === day; }
+
+    /* 朝4時〜17時台=朝の手紙。18時以降（と深夜）はその日の夕方用、
+       なければ店じまい直後の振り返り。data-forが合わない手紙は出さない
+       （古い手紙を黙って見せると、更新が止まっていることに気づけないため） */
+    var show = (h >= 4 && h < 18) ? (fresh(m) ? m : null)
+             : fresh(n2) ? n2
+             : fresh(n)  ? n
+             : null;
+
+    [m, n, n2, none].forEach(function(el){ el.hidden = (el !== (show || none)); });
+
+    if(!show){
+      var last = [m, n, n2].map(function(el){ return el.getAttribute("data-for") || ""; })
+                           .filter(Boolean).sort().pop();
+      sign.textContent = "湊（みなと）より — 最後に届いた手紙は "
+        + (last ? Number(last.slice(5,7)) + "/" + Number(last.slice(8,10)) + " ぶん" : "記録なし");
+    }
   })();
   </script>
 
@@ -742,7 +762,7 @@
     <p class="sub">日付が決まっているものだけ。覚えておく係はこのカード</p>
     <ul class="dl-list" id="dl-list">
       <li><span class="d-date">あす 8/4</span><span>運用代行さんへの台本提出（納期）</span></li>
-      <li><span class="d-date">写真待ち</span><span>鑑定A（Hさん）：受けたいと返事あり（7/27）。写真をもらってから4週間以内に鑑定書を渡す</span></li>
+      <li><span class="d-date">8月中</span><span>鑑定A（Hさん）：8/3に写真到着。8月中の納品へスケジュール変更</span></li>
       <li><span class="d-date">8月1週</span><span>Rさん講座・第3回ウェビナー。それまでに3回目・4回目の資料を準備</span></li>
       <li><span class="d-date">8月2週</span><span>鑑定B（振込済みのMさん）：フル鑑定を納品（4週間納期・お盆明け頃まで）</span></li>
       <li><span class="d-date">8月〜</span><span>手相講座（受講）スタート</span></li>
@@ -763,7 +783,7 @@
     </div>
     <div class="mgoal" role="checkbox" aria-checked="false" tabindex="0" data-key="m2">
       <div class="mbox"></div>
-      <div class="mtext">鑑定2件を納品する<small>Mさんは8月2週、Hさんは写真が届いてから4週間</small></div>
+      <div class="mtext">鑑定2件を納品する<small>Mさんは8月2週、Hさんは8月中（8/3写真到着）</small></div>
     </div>
     <div class="mgoal" role="checkbox" aria-checked="false" tabindex="0" data-key="m3">
       <div class="mbox"></div>
@@ -803,7 +823,7 @@
       <div class="meter">
         <div class="m-top"><span>今月の鑑定</span><span class="m-num">0 / 2件</span></div>
         <div class="m-track"><div class="m-fill" style="width:4%"></div></div>
-        <div class="m-note">8月はMさん（8月2週）とHさん（写真待ち）の納品月</div>
+        <div class="m-note">8月はMさん（8月2週）とHさん（8月中・写真到着済み）の納品月</div>
       </div>
     </div>
 
