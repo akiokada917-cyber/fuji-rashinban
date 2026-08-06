@@ -964,13 +964,22 @@
   /* ==== 通帳（BAKED）====
      ブラウザ保存が消える環境でも減らない記録。夜の店じまいでClaudeがここを書き換える。
      stampsBase = きのうまでの通算はなまる。day = 今日ぶんの確定チェック。 */
+  /* 2026-08-06 夕方：本人からの日中の完了報告を焼き込み。
+     店じまいではないので stampsBase・date・手紙は触っていない（繰り入れは今夜）。
+     t3（ストーリーズかリール）は本人の判断で今日は出さないことにしたため、未のまま繰り越す。 */
   var BAKED = {
     date: "2026-08-06",
     stampsBase: 45,
-    day: {},
+    day: { t1: true, t2: true },
     inbox: [
-      { id: "bk-tarot", text: "21時からタロット講座に参加", status: "today" },
-      { id: "bk-sleep", text: "23時までにお布団に入る", status: "today" }
+      { id: "bk-ch4",      text: "4章の実例写真スライドを5枚つくった", status: "done" },
+      { id: "bk-daihon",   text: "4章と5章の台本に、写真を見せる場面の読み上げ文を足した", status: "done" },
+      { id: "bk-kansatsu", text: "手の写真の観察を12人ぶん", status: "done" },
+      { id: "bk-question", text: "講座生さんの質問に答えた", status: "done" },
+      { id: "bk-manus",    text: "7章のManus用プロンプトを書いた", status: "done" },
+      { id: "bk-reel",     text: "リール台本のたたき台をつくった", status: "done" },
+      { id: "bk-tarot",    text: "21時からタロット講座に参加", status: "today" },
+      { id: "bk-sleep",    text: "23時までにお布団に入る", status: "today" }
     ]
   };
 
