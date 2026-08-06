@@ -969,8 +969,7 @@
     stampsBase: 45,
     day: {},
     inbox: [
-      { id: "b1", text: "23時までにお布団に入る", status: "today" },
-      { id: "b2", text: "スライド8章の続き（本番は8/21）", status: "inbox" }
+      { id: "bk-sleep", text: "23時までにお布団に入る", status: "today" }
     ]
   };
 
@@ -997,15 +996,55 @@
     save(seenStore, DATE_KEY);
   }
 
-  /* 通帳の内容をブラウザ保存とマージ（日付が合う日だけ。通帳の「済」は必ず生きる） */
+  /* ==== ふせんの整理（2026-08-06に作り直し）====
+     旧版は「idが一致しなければ足す」マージだったため、次の3つが起きていた：
+       ・同じidで文言だけ変えても新しい文言が入らない（22時→23時が反映されなかった）
+       ・違うidで同じ内容を焼くと二重に増える
+       ・先送りした焼き込みふせんが翌日以降も消えずに残る
+     直し方：焼き込みぶん（idが "bk-" で始まる）は毎回まるごと差し替える。
+     手で足したふせん（idは数値）はこれまでどおり触らない。 */
+
+  /* 旧バグで重複・滞留したぶんを、一度だけ全部そろえ直す */
+  var FIX_KEY = "rashinban-fusen-fix-20260806";
+  if(!load(FIX_KEY, false)){
+    inbox = [];
+    save(FIX_KEY, true);
+  }
+
+  function isBaked(x){ return String(x.id).indexOf("bk-") === 0; }
+
   if(BAKED.date === DATE_KEY){
     Object.keys(BAKED.day).forEach(function(k){ if(BAKED.day[k]) dayState[k] = true; });
-    if(BAKED.inbox.length){
-      var localIds = {};
-      inbox.forEach(function(x){ localIds[String(x.id)] = true; });
-      BAKED.inbox.forEach(function(b){ if(!localIds[String(b.id)]) inbox.push(b); });
-    }
+    /* その日すでにタップしたぶんの状態だけ引き継いで、中身は焼き込み版で置き換える */
+    var keptStatus = {};
+    inbox.forEach(function(x){ if(isBaked(x)) keptStatus[String(x.id)] = x.status; });
+    inbox = inbox.filter(function(x){ return !isBaked(x); });
+    BAKED.inbox.forEach(function(b){
+      var id = String(b.id);
+      inbox.push({ id: id, text: b.text, status: keptStatus[id] || b.status });
+    });
+  } else {
+    /* 今日ぶんの焼き込みでなければ、古い焼き込みふせんは残さない */
+    inbox = inbox.filter(function(x){ return !isBaked(x); });
   }
+
+  /* 今日の3つと同じ内容のふせん、そして同じ文言どうしの重なりを1枚にまとめる */
+  (function(){
+    function norm(s){ return String(s).replace(/[（(][^）)]*[）)]/g, "").replace(/[\s　【】]/g, ""); }
+    var main = {};
+    Array.prototype.forEach.call(document.querySelectorAll(".fusen .text"), function(el){
+      var head = el.childNodes[0] ? el.childNodes[0].textContent : el.textContent;
+      main[norm(head)] = true;
+    });
+    var seen = {};
+    inbox = inbox.filter(function(x){
+      var k = norm(x.text);
+      if(main[k] || seen[k]) return false;
+      seen[k] = true;
+      return true;
+    });
+  })();
+  save(inboxStore, inbox);
 
   /* ---------- 応援トースト ---------- */
   var CHEERS = [
