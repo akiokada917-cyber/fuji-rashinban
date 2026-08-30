@@ -1097,12 +1097,16 @@
     if(d > 0) cheer();
   }
 
-  /* ---------- できたことポケット ---------- */
-  var CORE = {
-    t1:"運用代行さんへリール台本を渡す",
-    t2:"動画講義を1本撮る（6章運命線）",
-    t3:"LINEに入った人に1人返す"
-  };
+  /* ---------- できたことポケット ----------
+     ふせんの文言はHTML側だけを直せば済むよう、ここでDOMから読む（2026-08-30修正）。
+     旧版はここに文言をベタ書きしていたため、店じまいでふせんを差し替えても
+     「きょうできたこと」と「もどす」ボタンには何日も前の文言が出ていた。 */
+  var CORE = {};
+  document.querySelectorAll("#core-tasks .fusen").forEach(function(el){
+    var t = el.querySelector(".text");
+    var head = t && t.childNodes[0] ? t.childNodes[0].textContent : "";
+    CORE[el.getAttribute("data-key")] = head.trim();
+  });
   var doneList = document.getElementById("done-list");
   var doneEmpty = document.getElementById("done-empty");
   function renderDone(){
