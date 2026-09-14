@@ -1035,6 +1035,17 @@
     save(FIX_KEY, true);
   }
 
+  /* 2026-09-15 本人依頼：9/14（月）に済んだ「21:00〜Zoom」の手書きふせんを一度だけ消す。
+     手書きふせんはスマホ内にしかなく、今日へ移したふせんには✕ボタンがないため */
+  var ZOOM_FIX_KEY = "rashinban-remove-zoom21-20260915";
+  if(!load(ZOOM_FIX_KEY, false)){
+    inbox = inbox.filter(function(x){
+      var t = String(x.text);
+      return !(/zoom|ズーム/i.test(t) && /21/.test(t));
+    });
+    save(ZOOM_FIX_KEY, true);
+  }
+
   function isBaked(x){ return String(x.id).indexOf("bk-") === 0; }
 
   if(BAKED.date === DATE_KEY){
